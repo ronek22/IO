@@ -1,0 +1,27 @@
+if ( !is.na(Petal.Width) & Petal.Width <= 0 ) {
+  Petal.Width <- NA
+}
+
+if ( Sepal.Length > 30 ) {
+  Sepal.Length <- NA
+}
+
+if ( Sepal.Width < 0) {
+  Sepal.Width <- NA
+}
+
+if ( Petal.Width < 0) {
+  Petal.Width <- NA
+}
+
+if ( Petal.Length < 0) {
+  Petal.Length <- NA
+}
+
+if (Petal.Length < 2*Petal.Width) {
+  Petal.Length <- NA
+} 
+
+if (Species != "setosa" | Species != "versicolor" | Species != "virginica") {
+  Species <- NA
+}
