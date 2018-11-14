@@ -1,4 +1,5 @@
-# Useful links: https://www.kaggle.com/nazar969/iris-dataset
+library(class)
+library(e1071)
 
 # zadanie 1 (A)
 # Klasyfikacja do 1-najblizszego sasiada
@@ -10,7 +11,7 @@
 # (2.7, 6) - versicolor
 # (5, 7) - virginica
 # (7, 3.5) - versicolor
-library(class)
+
 
 normalize <- function(x) {
     return ((x - min(x)) / (max(x) - min(x)))
@@ -18,7 +19,7 @@ normalize <- function(x) {
 
 # normalizacja (B)
 iris.norm <- as.data.frame(lapply(iris[1:4], normalize))
-iris.norm$Species = irisdb$Species
+iris.norm$Species = iris$Species
 # Podzielenie zbiorow (C)
 set.seed(1234)
 ind <- sample(2, nrow(iris.norm), replace=TRUE, prob=c(0.67, 0.33))
@@ -44,23 +45,43 @@ osoby <- data.frame(
     buys = c(TRUE, TRUE, TRUE, FALSE, TRUE, FALSE, FALSE)
 )
 
-#krok 2
-tAge = nrow(osoby[osoby$age == '>40' & osoby$buys==TRUE,])/nrow(osoby[osoby$buy == TRUE,]) # (wśród osób kupujących komputer liczymy osoby starsze niż 40)
-fAge = nrow(osoby[osoby$age == '>40' & osoby$buys==FALSE,])/nrow(osoby[osoby$buy == FALSE,]) # (jest jedna osoba 40+ wśród 3 osób niekupujących komputera)
-tIncome = nrow(osoby[osoby$income == 'low' & osoby$buys==TRUE,])/nrow(osoby[osoby$buy == TRUE,])
-fIncome = nrow(osoby[osoby$income == 'low' & osoby$buys==FALSE,])/nrow(osoby[osoby$buy == FALSE,])
-tStudent = nrow(osoby[osoby$student == FALSE & osoby$buys==TRUE,])/nrow(osoby[osoby$buy == TRUE,])
-fStudent = nrow(osoby[osoby$student == FALSE & osoby$buys==FALSE,])/nrow(osoby[osoby$buy == FALSE,])
-tCredit = nrow(osoby[osoby$credit.rating == 'fair' & osoby$buys==TRUE,])/nrow(osoby[osoby$buy == TRUE,])
-fCredit = nrow(osoby[osoby$credit.rating == 'fair' & osoby$buys==FALSE,])/nrow(osoby[osoby$buy == FALSE,])
+#funkcja przewidujaca wynik
+myNaiveBayes <- function(age, income, student, credit) {
+  #krok 2
+  tAge = nrow(osoby[osoby$age == age & osoby$buys==TRUE,])/nrow(osoby[osoby$buy == TRUE,]) # (wśród osób kupujących komputer liczymy osoby starsze niż 40)
+  fAge = nrow(osoby[osoby$age == age & osoby$buys==FALSE,])/nrow(osoby[osoby$buy == FALSE,]) # (jest jedna osoba 40+ wśród 3 osób niekupujących komputera)
+  tIncome = nrow(osoby[osoby$income == income & osoby$buys==TRUE,])/nrow(osoby[osoby$buy == TRUE,])
+  fIncome = nrow(osoby[osoby$income == income & osoby$buys==FALSE,])/nrow(osoby[osoby$buy == FALSE,])
+  tStudent = nrow(osoby[osoby$student == student & osoby$buys==TRUE,])/nrow(osoby[osoby$buy == TRUE,])
+  fStudent = nrow(osoby[osoby$student == student & osoby$buys==FALSE,])/nrow(osoby[osoby$buy == FALSE,])
+  tCredit = nrow(osoby[osoby$credit.rating == credit & osoby$buys==TRUE,])/nrow(osoby[osoby$buy == TRUE,])
+  fCredit = nrow(osoby[osoby$credit.rating == credit & osoby$buys==FALSE,])/nrow(osoby[osoby$buy == FALSE,])
+  
+  # krok 3
+  probT = tAge * tIncome * tStudent * tCredit
+  probF = fAge * fIncome * fStudent * fCredit
+  
+  # krok 4
+  bayesT = probT * (nrow(osoby[osoby$buy == TRUE,]))/nrow(osoby)
+  bayesF = probF * (nrow(osoby[osoby$buy == FALSE,]))/nrow(osoby)
 
-# krok 3
-probT = tAge * tIncome * tStudent * tCredit
-probF = fAge * fIncome * fStudent * fCredit
+  max_result = max(bayesT, bayesF)
+  #print(max_result)
+  print(bayesT)
+  print(bayesF)
+  return(if(bayesT > bayesF) 'yes' else 'no')
+}
+print(myNaiveBayes('>40','low', FALSE, 'fair'))
 
-# krok 4
-bayesT = probT * (nrow(osoby[osoby$buy == TRUE,]))/nrow(osoby)
-bayesF = probF * (nrow(osoby[osoby$buy == FALSE,]))/nrow(osoby)
-result = max(bayesT, bayesF)
+# Zadanie 3
+iris.training <-iris[ind==1, 1:5]
+iris.test <-iris[ind==2, 1:5]
+model <- naiveBayes(Species ~ ., data = iris.training)
+pred <- predict(model, newdata = iris.test)
+conf.matrix <- table(pred, iris.test$Species)
+print(conf.matrix)
 
-print(result)
+
+
+
+
