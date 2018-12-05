@@ -25,7 +25,8 @@ pr <- compute(neuralIris, testSet[,1:4])
 result <- as.data.frame(pr$net.result)
 colnames(result) <- c("Setosa", "Versicolor", "Virginica")
 
-predicted <- colnames(result)[max.col(result,ties.method="first")]
+predicted <- colnames(result)[max.col(result)]
 real <- testSet$Species
 
 conf.matrix <- table(predicted, real)
+print(conf.matrix)
