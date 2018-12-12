@@ -77,7 +77,7 @@ print(myNaiveBayes('>40','low', FALSE, 'fair'))
 iris.training <-iris[ind==1, 1:5]
 iris.test <-iris[ind==2, 1:5]
 model <- naiveBayes(Species ~ ., data = iris.training)
-pred <- predict(model, newdata = iris.test)
+pred <- predict(model, newdata = iris.test[,1:4])
 conf.matrix <- table(pred, iris.test$Species)
 print(conf.matrix)
 
