@@ -22,7 +22,6 @@ get_tpr <- function(t){
 }
 
 get_fpr <- function(t) {
-  # FP/FP+TN
   tpr = t[3]/(t[3]+t[4])
   return(tpr)
 }
@@ -35,13 +34,14 @@ data = read.csv("processed.cleveland.csv", header=TRUE, sep=',')
 
 data[data == "?"] <- NA
 data <- na.omit(data)
+all_num = data$num
+data$num = ifelse(data$num == 0, "No", "Yes")
 
 # Algorytm knn wymaga, by wszystkie kolumny,
 # by³y numeryczne, a kolumna klasowa byla factorem
 data$ca <- as.character(data$ca) 
 data$ca <- as.numeric(data$ca)
 data$thal <- as.numeric(data$thal)
-data$num = ifelse(data$num == 0, "No", "Yes")
 data$num = as.factor(data$num)
 
 # dzielenie na zbior treningowy i testowy 80% do 20%
@@ -63,6 +63,8 @@ ctree.confMat <- table(ctree.predicted, real)[2:1, 2:1]
 ctree.accuracy <- mean(real == ctree.predicted)
 ctree.tpr <- get_tpr(ctree.confMat)
 ctree.fpr <- get_fpr(ctree.confMat)
+
+ggplot(ctree)
 
 print(ctree.confMat)
 print(ctree.tpr)
@@ -107,8 +109,12 @@ knn.list <- data.frame(k = numeric(), accuracy = numeric())
 
 for (i in 1:14) {
   temp_knn <- knn(data.norm.train[1:13], data.norm.test[1:13], cl=data.norm.train$num, k = i, prob = FALSE)
-  knn.list[nrow(knn.list)+1,] <- c(i, mean(real==temp_knn))
+  knn.list[nrow(knn.list)+1,] <- c(i, mean(real==temp_knn)*100)
 }
+
+knn.accuracy.plot <- ggplot(knn.list, aes(x=k,y=accuracy)) + geom_bar(stat="identity", fill="steelblue") +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 14))
+ggsave(filename="wykresy/knn_k.png", dpi=300, type="cairo")
 
 # Szukanie k z najwiêksz¹ dok³adnoœci¹
 knn.kWithMaxAccuracy = knn.list[which.max(knn.list$accuracy),1] 
@@ -130,6 +136,13 @@ print(knn.accuracy)
 
 rf <- randomForest(num ~ ., data=data.train, mtry=1, importance = TRUE)
 var_importance <- varImpPlot(rf)
+var_importance <- as.data.frame(var_importance)
+var_importance$varnames <- rownames(var_importance)
+rf.plot <- ggplot(var_importance, aes(x=reorder(varnames, MeanDecreaseGini), y=MeanDecreaseGini)) + geom_point() +
+  geom_segment(aes(x=varnames, xend=varnames, y=0, yend=MeanDecreaseGini)) +   ylab("IncNodePurity") +
+  xlab("Variable Name") +
+  coord_flip()
+ggsave(filename="wykresy/forest.png", dpi=300, type="cairo")
 rf.predicted <- predict(rf, data.test)
 rf.confMat <- table(rf.predicted, real)[2:1, 2:1]
 rf.accuracy <- mean(real == rf.predicted)
@@ -142,34 +155,15 @@ print(rf.fpr)
 print(rf.accuracy)
 # =====================
 
-# ############################
-# ############################
-# ############################
+# SUMMARY PLOT
+all_accuracy = data.frame(
+  "accuracy" = c(ctree.accuracy, nb.accuracy, knn.accuracy, rf.accuracy),
+  "classificator" = c("Drzewo", "Naive Bayes", "kNN", "Random Forest")
+)
 
-# Rozszyfrowaæ w jakiej zale¿noœci od TPR i FPR s¹ miary FNR i TNR. Podaæ
-# te wzory w sprawozdaniu.
-# FNR = 1 - TPR
-# TNR = 1 - FPR
-# =============================================================================
-# Udzieliæ odpowiedzi czym jest u Pañstwa b³¹d pierwszego i drugiego
-# rodzaju. Jak maj¹ siê oba rodzaje b³êdów do TPR, FPR, TNR, FNR. Im
-# wiêcej b³êdów pierwszego rodzaju tym wiêksze jest co? Co z b³êdami
-# drugiego rodzaju?
-# .............................................................................
-# B³¹d pierwszego rodzaju to ludzie zdrowi, b³êdnie zdiagnozowania jako chorzy
-# B³¹d drugiego rzêdu to ludzie chorzy, b³êdnie zdiagnozowania jako zdrowi
-# Im wiêcej b³êdów pierwszego rodzaju tym mniejszy TNR, a tym wiêkszy FPR
-# Im wiêcej b³êdów drugiego rodzaju tym mniejszy TPR, a tym wiêkszy FNR
-# =============================================================================
-# Pytanie filozoficzne, na które równie¿ proszê udzieliæ odpowiedzi: który z
-# b³êdów w Pañstwa bazie jest gorszy do pope³nienia: pierwszego czy drugiego
-# rodzaju? OdpowiedŸ uzasadniæ.
-# .............................................................................
-# Uwa¿am, ¿e b³¹d drugiego rodzaju jest gorszy do pope³nienia. Na przyk³adzie
-# wykorzystanej przeze mnie bazy: ludzie, którzy na prawdê s¹ chorzy zostan¹
-# zakwalifikowania jako zdrowi i nie bêd¹ mieli szans na leczenie, co mo¿e spowodowaæ
-# zgon. Przy b³êdie pierwszego rodzaju, zdrowy pacjent po dok³adnych badaniach zostanie
-# odes³any do domu.
+all_accuracy.plot <- ggplot(all_accuracy, aes(x = classificator, y = accuracy, fill = classificator)) + geom_bar(stat="identity", show.legend = FALSE)
+ggsave(filename="wykresy/accuracyy.png", dpi=300, type="cairo")
+
 
 # Dla ka¿dego z czterech klasyfikatorów obliczyæ parê (FPR,TPR) i zaznaczyæ
 # jako punkt na wykresie
@@ -181,6 +175,7 @@ rocSpace = data.frame(
 
 # Wykres
 roc_plot <- ggplot(rocSpace, aes(x = FPR, y = TPR, color = Class)) + geom_point(size=3)
+ggsave(filename="wykresy/rocSpace.png", dpi=300, type="cairo")
 
 # ##############################
 # #GRUPOWANIE METODA K-SREDNICH#
@@ -220,7 +215,14 @@ kmeans.pred.plot <- ggplot(data.final, aes(x=PC1, y=PC2, color=cluster)) +
   geom_point(data=centers, aes(x=PC1,y=PC2, color='Center')) + 
   geom_point(data=centers, aes(x=PC1,y=PC2, color='Center'), size=52, alpha=.3, show.legend=FALSE)
 
+ggsave(filename="wykresy/kmeans_pred_2.png", dpi=300, type="cairo")
+
 kmeans.real.plot <- ggplot(data.final, aes(x=PC1, y=PC2, color=data$num)) +
+  geom_point() 
+
+ggsave(filename="wykresy/kmeans_real.png", dpi=300, type="cairo")
+
+kmeans.real.plot.4 <- ggplot(data.final, aes(x=PC1, y=PC2, color=all_num)) +
   geom_point() 
 
 
@@ -244,16 +246,13 @@ data.rules$slope = as.factor(data.rules$slope)
 data.rules$ca = as.factor(data.rules$ca)
 data.rules$thal = as.factor(data.rules$thal)
 
+data.rules.disc <- discretizeDF(data.rules)
+
+data.rules.disc <- as(data.rules.disc, 'transactions')
 
 
-
-
-
-data.rules <- as(data.rules, 'transactions')
-
-
-rules <- apriori(data.rules, 
-                 parameter = list(minlen=2, supp=0.005, conf=0.8),
+rules <- apriori(data.rules.disc, 
+                 parameter = list(minlen=2, supp=0.1, conf=0.8),
                  appearance = list(rhs=c("num=No", "num=Yes"), default="lhs"),
                  control = list(verbose=F)
                  )
@@ -263,12 +262,21 @@ subset.matrix[lower.tri(subset.matrix, diag=T)] <- FALSE
 redundant <- colSums(subset.matrix, na.rm=T) >= 1
 rules.pruned <- rules.sorted[!redundant]
 
-print(inspect(rules.pruned))
+print(inspect(head(rules.pruned, by = "lift")))
 
+# 6
+data.women <- data[data$sex==0,]
+women.incidence <- round(prop.table(table(data.women$num)) * 100, digits = 1)
+data.men <- data[data$sex==1,]
+men.incidence <- round(prop.table(table(data.men$num)) * 100, digits = 1)
+ 
+bar <- ggplot(data.women, aes(x=factor(1), fill=factor(num))) + geom_bar(width=1)
+pie <- bar + coord_polar(theta = "y") + guides(fill=guide_legend("Sick?")) + theme_void()
+ggsave(filename="wykresy/pie_women.png", dpi=300, type="cairo")
 
-
-
-
+bar <- ggplot(data.men, aes(x=factor(1), fill=factor(num))) + geom_bar(width=1)
+pie <- bar + coord_polar(theta = "y") + guides(fill=guide_legend("Sick?")) + theme_void()
+ggsave(filename="wykresy/pie_men.png", dpi=300, type="cairo")
 
 
 
