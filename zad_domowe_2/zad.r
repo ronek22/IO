@@ -8,12 +8,12 @@ library(data.table)
 
 
 # Wybrana baza Heart Disease https://archive.ics.uci.edu/ml/datasets/Heart+Disease
-# G³ówna baza danych zawiera³a, a¿ 76 kolumn. Jednak specjaliœci od machine learningu
-# pracowali wy³¹cznie na bazie Clevaland, która zawiera tylko 14 z 76 pocz¹tkowych kolumn
+# G??wna baza danych zawiera?a, a? 76 kolumn. Jednak specjali?ci od machine learningu
+# pracowali wy??cznie na bazie Clevaland, kt?ra zawiera tylko 14 z 76 pocz?tkowych kolumn
 
-# Kolumna "num" nadaje siê na klasê.
-# Zawiera wartoœci liczbowê od 0 (choroba nie wystêpuje) do 4.
-# Zmienili³em zakres wartoœci na binarny: 0 (zdrowy), 1 (chory), dziêki temu kolumna nadaje siê na klasê
+# Kolumna "num" nadaje si? na klas?.
+# Zawiera warto?ci liczbow? od 0 (choroba nie wyst?puje) do 4.
+# Zmienili?em zakres warto?ci na binarny: 0 (zdrowy), 1 (chory), dzi?ki temu kolumna nadaje si? na klas?
 
 get_tpr <- function(t){
   # t - confusion matrix, TP/TP+FN
@@ -28,9 +28,9 @@ get_fpr <- function(t) {
 
 data = read.csv("processed.cleveland.csv", header=TRUE, sep=',')
 
-# W bazie znajduj¹ sie troche pustych wartoœci w kolumnach, oznaczone s¹ "?"
-# które zaburza³y by przewidywanie wyników
-# Szukamy ich i oznaczami jako bez wartoœci, nastêpnie usuwam te wiersze z bazy
+# W bazie znajduj? sie troche pustych warto?ci w kolumnach, oznaczone s? "?"
+# kt?re zaburza?y by przewidywanie wynik?w
+# Szukamy ich i oznaczami jako bez warto?ci, nast?pnie usuwam te wiersze z bazy
 
 data[data == "?"] <- NA
 data <- na.omit(data)
@@ -38,7 +38,7 @@ all_num = data$num
 data$num = ifelse(data$num == 0, "No", "Yes")
 
 # Algorytm knn wymaga, by wszystkie kolumny,
-# by³y numeryczne, a kolumna klasowa byla factorem
+# by?y numeryczne, a kolumna klasowa byla factorem
 data$ca <- as.character(data$ca) 
 data$ca <- as.numeric(data$ca)
 data$thal <- as.numeric(data$thal)
@@ -63,8 +63,6 @@ ctree.confMat <- table(ctree.predicted, real)[2:1, 2:1]
 ctree.accuracy <- mean(real == ctree.predicted)
 ctree.tpr <- get_tpr(ctree.confMat)
 ctree.fpr <- get_fpr(ctree.confMat)
-
-ggplot(ctree)
 
 print(ctree.confMat)
 print(ctree.tpr)
@@ -104,7 +102,7 @@ data.norm.train <- data.norm[ind==1,]
 data.norm.test <- data.norm[ind==2,]
 
 
-# Lista z dok³adnoœci¹ zale¿n¹ od podanego k
+# Lista z dok?adno?ci? zale?n? od podanego k
 knn.list <- data.frame(k = numeric(), accuracy = numeric())
 
 for (i in 1:14) {
@@ -116,7 +114,7 @@ knn.accuracy.plot <- ggplot(knn.list, aes(x=k,y=accuracy)) + geom_bar(stat="iden
   scale_x_continuous(breaks = scales::pretty_breaks(n = 14))
 ggsave(filename="wykresy/knn_k.png", dpi=300, type="cairo")
 
-# Szukanie k z najwiêksz¹ dok³adnoœci¹
+# Szukanie k z najwi?ksz? dok?adno?ci?
 knn.kWithMaxAccuracy = knn.list[which.max(knn.list$accuracy),1] 
 knn <- knn(data.norm.train[1:13], data.norm.test[1:13], cl=data.norm.train$num, k = knn.kWithMaxAccuracy, prob = FALSE)
 
@@ -165,7 +163,7 @@ all_accuracy.plot <- ggplot(all_accuracy, aes(x = classificator, y = accuracy, f
 ggsave(filename="wykresy/accuracyy.png", dpi=300, type="cairo")
 
 
-# Dla ka¿dego z czterech klasyfikatorów obliczyæ parê (FPR,TPR) i zaznaczyæ
+# Dla ka?dego z czterech klasyfikator?w obliczy? par? (FPR,TPR) i zaznaczy?
 # jako punkt na wykresie
 rocSpace = data.frame(
  "FPR" = c(ctree.fpr, nb.fpr, knn.fpr, rf.fpr),
