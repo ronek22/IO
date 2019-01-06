@@ -49,7 +49,7 @@ function(e) {
       var i,j;
       for (i=0; i<6; i++){
           for (j=0; j<15; j++){
-              hidden[i] = input[j]*weights1[i*15+j];
+              hidden[i] += input[j]*weights1[i*15+j];
           }
           hidden[i] = hidden[i]+bias1[i];
           hidden[i] = 1/(1+Math.pow(Math.E, -hidden[i]));
@@ -64,7 +64,7 @@ function(e) {
       var output = [0,0,0,0,0,0,0];
       for (i=0; i<7; i++){
           for (j=0; j<6; j++){
-              output[i] = hidden[j]*weights2[i*6+j];
+              output[i] += hidden[j]*weights2[i*6+j];
           }
           output[i] = output[i]+bias2[i];
           output[i] = 1/(1+Math.pow(Math.E, -output[i]));

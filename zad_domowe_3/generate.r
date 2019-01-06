@@ -3,20 +3,16 @@ library(nnet)
 wd <- file.path("C:", "Users", "kubar", "Documents", "Projects", "IO", "zad_domowe_3")
 setwd(wd)
 
+
+
+game_data = read.csv("shooter.csv", header=TRUE, sep=',')
+# normalize needed column for neural network
+
 normalize <- function(x) {
   if(min(x) == max(x)) return (x)
   return ((x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE)))
 }
 
-printW <- function(x) {
-  paste0(x,collapse=',')
-}
-
-
-
-
-game_data = read.csv("shooter.csv", header=TRUE, sep=',')
-# normalize needed column for neural network
 pos_col = c("myTank.x", "myTank.y", "enemyTank.x", "enemyTank.y", 
             "myBullet1.x", "myBullet1.y","myBullet2.x","myBullet2.y","myBullet3.x", "myBullet3.y",
             "enemyBullet1.x", "enemyBullet1.y","enemyBullet2.x","enemyBullet2.y","enemyBullet3.x", "enemyBullet3.y")
@@ -57,3 +53,6 @@ weights1 = results[["weights"]][[1]][[1]][-1,]
 bias2 = results[["weights"]][[1]][[2]][1,]
 weights2 = results[["weights"]][[1]][[2]][-1,]
 
+printW <- function(x) {
+  paste0(x,collapse=',')
+}

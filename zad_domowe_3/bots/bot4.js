@@ -13,20 +13,8 @@ function (e) {
     var me = e.data.myTank;
     var time = e.data.currentGameTime
 
-
-    /*Simple neural network*/
-    /*we want our tank only to move around the field*/
-
-    /*let's take input layer with 3 neurons - extracted from game data*/
-    var input = [me.x, me.y, me.rotation, me.canoonRotation,
-        me.velocityX, me.velocityY, me.shootCooldown,
-        enemy.x, enemy.y, enemy.rotation,
-        enemy.cannonRotation, enemy.velocityX,
-        enemy.velocityY, enemy.shootCooldown, time
-    ];
-
-    /*is it a good idea to normalize the inputs here?*/
-    input = [me.x / 500.0,
+    var input = [
+        me.x / 500.0,
         me.y / 500.0,
         angle(me.rotation),
         angle(me.cannonRotation),
@@ -42,7 +30,6 @@ function (e) {
         enemy.shootCooldown / 100.0,
         time / 40000.0
     ];
-    console.log("TEST: " + enemy.rotation + ', ' + enemy.cannonRotation)
 
     console.log("NeuNet input: " + input[0] + ", " + input[1] + ", " + input[2] + ", " + input[3] + ", " +
         input[4] + ", " + input[5] + ", " + input[6] + ", " + input[7] + ", " + input[8] + ", " + input[9] + ", " +
