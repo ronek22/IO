@@ -10,9 +10,11 @@ library(RColorBrewer)
 library(wordcloud)
 library(cluster)
 library(fpc)
+library(RNewsflow)
 
-cname <- file.path("C:", "Users", "kubar", "Documents", "Projects", "IO", "lab11", "articles")
-# cname <- file.path("~", "Studia", "Inteligencja", "lab11", "articles")
+
+# cname <- file.path("C:", "Users", "kubar", "Documents", "Projects", "IO", "lab11", "articles")
+cname <- file.path("~", "Studia", "Inteligencja", "lab11", "articles")
 
 preprocsessing <- function(docs) {
     docs <- tm_map(docs,removePunctuation)  
@@ -21,7 +23,7 @@ preprocsessing <- function(docs) {
 
     print(stopwords("english"))
     docs <- tm_map(docs, removeWords, stopwords("english"))   
-    docs <- tm_map(docs, removeWords, c("can", "also", "used", "use", "often", "many", "like"))   
+    docs <- tm_map(docs, removeWords, c("can", "also", "used", "use", "often", "many", "like", "may"))   
     docs <- tm_map(docs, stripWhitespace)
 
     docs
@@ -55,7 +57,8 @@ term_correl <- findAssocs(dtm, c("computer" , "life", "programming", "language")
 # WORD CLOUDS
 set.seed(142)
 dark2 <- brewer.pal(6, "Dark2")
-# wordcloud(names(freq), freq, min.freq = 4, colors=dark2)
+# trzeba odpalic w konsoli
+wordcloud(names(freq), freq, min.freq = 4, colors=dark2)
 
 # KLASTERYZACJA
 d <- dist(t(dtms), method="euclidean")
@@ -69,3 +72,8 @@ rect.hclust(fit, k=6, border="red") # draw dendogram with red borders around the
 # K-Srednie
 kfit <- kmeans(d,6)
 clusplot(as.matrix(d), kfit$cluster, color=T, shade=T, lines=0)
+
+cos <- documents.compare(dtm, dtm.y = NULL, measure="cosine")
+print(cos[cos$x=="genetic-algorithm.txt",])
+
+
