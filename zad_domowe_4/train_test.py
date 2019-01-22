@@ -1,23 +1,18 @@
+import os
+import warnings
 from pathlib import Path
 
 import h5py
-import numpy as np
-import os
-import glob
-import cv2
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict
-from sklearn.model_selection import KFold, StratifiedKFold
-from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
-from sklearn.externals import joblib
-import warnings
+
 warnings.filterwarnings('ignore')
 
 
@@ -50,10 +45,6 @@ def draw_confusion(matrix, name, classes):
         for j in range(len(matrix)):
             ax.text(j, i, matrix[i, j], ha="center", va="center", color="w")
     plt.savefig('output/charts/' + name + ".png")
-
-def plot_summary():
-    for name, result in results.items():
-        print(name, result)
 
 
 # number of trees for random forest classificatory
@@ -98,7 +89,6 @@ if __name__ == "__main__":
     print("Test data   : {}".format(testDataGlobal.shape))
     print("Train labels: {}".format(trainLabelsGlobal.shape))
     print("Test labels : {}".format(testLabelsGlobal.shape))
-
 
     for name, model in models:
         classifier = model.fit(trainDataGlobal, trainLabelsGlobal)
